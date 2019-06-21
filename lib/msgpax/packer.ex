@@ -109,6 +109,9 @@ defimpl Msgpax.Packer, for: Atom do
   def pack(nil), do: [0xC0]
   def pack(false), do: [0xC2]
   def pack(true), do: [0xC3]
+  def pack(:ninf), do: [0xCB, 0xFF, 0xF0, 0, 0, 0, 0, 0, 0]
+  def pack(:pinf), do: [0xCB, 0x7F, 0xF0, 0, 0, 0, 0, 0, 0]
+  def pack(:nan), do: [0xCB, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
 
   def pack(atom) do
     atom
