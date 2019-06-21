@@ -41,6 +41,9 @@ defmodule Msgpax.Unpacker do
     [quote(do: <<0xC0>>)] => quote(do: nil),
     [quote(do: <<0xC2>>)] => quote(do: false),
     [quote(do: <<0xC3>>)] => quote(do: true),
+    [quote(do: <<0xCB, 1::1, 0b11111111111::11, 0::52>>)] => quote(do: :ninf),
+    [quote(do: <<0xCB, _::1, 0b11111111111::11, 0::52>>)] => quote(do: :pinf),
+    [quote(do: <<0xCB, _::1, 0b11111111111::11, _:52>>)] => quote(do: :nan),
     # Strings
     [
       quote(do: <<0b101::3, length::5, value::size(length)-bytes>>),
