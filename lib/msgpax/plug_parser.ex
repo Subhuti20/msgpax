@@ -1,4 +1,4 @@
-if Code.ensure_compiled?(Plug) do
+if elem(Code.ensure_compiled(Plug), 0) != :error do
   defmodule Msgpax.PlugParser do
     @moduledoc """
     A `Plug.Parsers` plug for parsing a MessagePack-encoded body.
@@ -77,35 +77,42 @@ if Code.ensure_compiled?(Plug) do
       unpacker.unpack!(body)
     end
 
+    defp ensure_compiled?(module) do
+      case Code.ensure_compiled(module) do
+        {:module, _} -> true
+        {:error, _} -> false
+      end
+    end
+
     defp validate_unpacker!({module, function, extra_args})
          when is_atom(module) and is_atom(function) and is_list(extra_args) do
       arity = length(extra_args) + 1
 
-      unless Code.ensure_compiled?(module) and function_exported?(module, function, arity) do
+      unless ensure_compiled?(module) and function_exported?(module, function, arity) do
         raise ArgumentError,
-              "invalid :unpacker option. Undefined function " <>
-                Exception.format_mfa(module, function, arity)
+          "invalid :unpacker option. Undefined function " <>
+            Exception.format_mfa(module, function, arity)
       end
     end
 
     defp validate_unpacker!(unpacker) when is_atom(unpacker) do
-      unless Code.ensure_compiled?(unpacker) do
+      unless ensure_compiled?(unpacker) do
         raise ArgumentError,
-              "invalid :unpacker option. The module #{inspect(unpacker)} is not " <>
-                "loaded and could not be found"
+          "invalid :unpacker option. The module #{inspect(unpacker)} is not " <>
+            "loaded and could not be found"
       end
 
       unless function_exported?(unpacker, :unpack!, 1) do
         raise ArgumentError,
-              "invalid :unpacker option. The module #{inspect(unpacker)} must " <>
-                "implement unpack!/1"
+          "invalid :unpacker option. The module #{inspect(unpacker)} must " <>
+            "implement unpack!/1"
       end
     end
 
     defp validate_unpacker!(unpacker) do
       raise ArgumentError,
-            "the :unpacker option expects a module, or a three-element " <>
-              "tuple in the form of {module, function, extra_args}, got: #{inspect(unpacker)}"
+        "the :unpacker option expects a module, or a three-element " <>
+          "tuple in the form of {module, function, extra_args}, got: #{inspect(unpacker)}"
     end
   end
 end
